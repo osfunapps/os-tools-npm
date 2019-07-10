@@ -1,0 +1,13 @@
+{
+  "name": "os-tools",
+  "version": "1.0.4",
+  "description": "this module contains fundamental scripts (like fileHandler) to implement in an npm project",
+  "main": "index.js",
+  "keywords": [
+    "osfunapps",
+    "tools",
+    "npm"
+  ],
+  "author": "osfunapps",
+  "license": "ISC"
+}
