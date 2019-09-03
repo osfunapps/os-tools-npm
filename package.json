@@ -1,6 +1,6 @@
 {
   "name": "os-tools",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "this module contains fundamental generic methods to implement in an npm project.",
   "main": "index.js",
   "keywords": [

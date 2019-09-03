@@ -58,14 +58,14 @@ const self = module.exports = {
         let apksList = fh.getDirContent(apksPath)
         for (let i = 0; i < apksList.length; i++) {
             console.log("unpacking " + apksList[i])
-            let stripped = stripExtension(apksList[i])
+            let stripped = fh.stripExtension(apksList[i])
             if (stripped === '') {
                 continue
             }
             let currDestPath = destPath + stripped
             fh.createDir(currDestPath)
             let cmd = jadxExePath + ' -d ' + '"' + currDestPath + '"' + ' ' + '"' + apksPath + apksList[i] + '"'
-            await runCmd(cmd)
+            await self.runCmd(cmd)
 
         }
     },
@@ -98,5 +98,77 @@ const self = module.exports = {
         const month = dateObj.getUTCMonth() + 1;
         const day = dateObj.getUTCDate();
         return day + numbersSeparator + month + numbersSeparator + year
+    },
+
+    /**
+     * will filter a list by val list
+     * @param arr -> the list to filter
+     * @param remove -> set to true if you want to remove the element found, else false so they will be removed
+     * @param vals -> the values to look for
+     * @param caseSensitive -> true to case sensitive
+     * @return {Array}
+     */
+    filterListByVals: function (arr, remove = false, vals = [], caseSensitive = false) {
+        let resArr = []
+        if (remove) {
+            resArr = arr
+        }
+        for (let i = 0; i < arr.length; i++) {
+            if (remove) {
+                resArr = filterListByVal(resArr, remove, vals[i], caseSensitive);
+            } else {
+                let arr2 = filterListByVal(arr, remove, vals[i], caseSensitive);
+                resArr = mergeArrays(resArr, arr2, true)
+            }
+        }
+
+
+        return resArr
+    },
+
+    /**
+     * will filter a list by val
+     */
+    filterListByVal: function (arr, remove = false, val, caseSensitive = false) {
+        if (caseSensitive) {
+            if (remove) {
+                return arr.filter((data) => !(data.includes(val)));
+            } else {
+                return arr.filter((data) => data.includes(val));
+            }
+        } else {
+            if (remove) {
+                return arr.filter((data) => !(data.toLowerCase().includes(val.toLowerCase())))
+            } else {
+                return arr.filter((data) => data.toLowerCase().includes(val.toLowerCase()));
+            }
+        }
+    },
+
+    mergeArrays: function (arr1, arr2, uniqueElements = false) {
+        if (uniqueElements) {
+            return arr1.filter(value => -1 === arr2.indexOf(value))
+        } else {
+            return arr1.concat(arr2)
+        }
+    },
+
+    /**
+     * will filter a dictionary by key
+     */
+    filterDictByKey: function(dictt, name, remove = false, caseSensitive = false) {
+        if (caseSensitive) {
+            if (remove) {
+                return dictt.filter(o => !(Object.keys(o).some(k => o[k].includes(name))));
+            } else {
+                return dictt.filter(o => Object.keys(o).some(k => o[k].includes(name)));
+            }
+        } else {
+            if (remove) {
+                return dictt.filter(o => !(Object.keys(o).some(k => o[k].toLowerCase().includes(name.toLowerCase()))));
+            } else {
+                return dictt.filter(o => Object.keys(o).some(k => o[k].toLowerCase().includes(name.toLowerCase())));
+            }
+        }
     }
 }
