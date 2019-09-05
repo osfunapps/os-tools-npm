@@ -1,10 +1,9 @@
-// tools module to perform file operations, prompts etc...
 const fs = require('fs');
 
 const self = module.exports = {
 
     /**
-     * will wait a given time
+     * Will wait for a given time
      */
     delay: function (timeout) {
         return new Promise((resolve) => {
@@ -13,21 +12,21 @@ const self = module.exports = {
     },
 
     /**
-     * will remove everything except numbers from a given string
+     * Will remove everything except numbers from a given string
      */
     onlyNumericFromStr: function (str) {
         return str.replace(/\D+/g, '');
     },
 
     /**
-     * will remove everything except alpha from a given string
+     * Will remove everything except alpha from a given string
      */
     onlyAlphaFromStr: function (str) {
         return str.replace('[\\p{Alnum},\\s#\\-.]');
     },
 
     /**
-     * will run a cmd command
+     * Wll run a cmd command
      */
     runCmd: function (cmd) {
         return new Promise(function (resolve) {
@@ -43,36 +42,16 @@ const self = module.exports = {
             });
 
             coffeeProcess.stdout.on('error', function (err) {
-                console.log("Error running cmd command: ")
+                console.log("Error running cmd command: ");
                 throw  err
             });
         }.bind())
     },
 
     /**
-     * will unpack a series of apks, located in a path, to a desired destination
-     */
-    unpackApks: async function (jadxExePath, apksPath, destPath) {
-        const fh = require('os-file-handler');
-        fh.createDir(destPath)
-        let apksList = fh.getDirContent(apksPath)
-        for (let i = 0; i < apksList.length; i++) {
-            console.log("unpacking " + apksList[i])
-            let stripped = fh.stripExtension(apksList[i])
-            if (stripped === '') {
-                continue
-            }
-            let currDestPath = destPath + stripped
-            fh.createDir(currDestPath)
-            let cmd = jadxExePath + ' -d ' + '"' + currDestPath + '"' + ' ' + '"' + apksPath + apksList[i] + '"'
-            await self.runCmd(cmd)
-
-        }
-    },
-
-    /**
-     * will prompt the user with a question and return the answer
-     * @param question
+     * Will prompt the user with a question and return the answer.
+     *
+     * @param question -> the question to ask the user
      */
     promptUser: function (question) {
         return new Promise((resolve, reject) => {
@@ -89,7 +68,8 @@ const self = module.exports = {
 
 
     /**
-     * will return today's date
+     * Will return today's date.
+     *
      * @param numbersSeparator -> the separator to use between the numbers
      */
     getTodaysDate: function (numbersSeparator) {
@@ -101,7 +81,8 @@ const self = module.exports = {
     },
 
     /**
-     * will filter a list by val list
+     * Will filter a list by val list
+     *
      * @param arr -> the list to filter
      * @param remove -> set to true if you want to remove the element found, else false so they will be removed
      * @param vals -> the values to look for
@@ -109,16 +90,16 @@ const self = module.exports = {
      * @return {Array}
      */
     filterListByVals: function (arr, remove = false, vals = [], caseSensitive = false) {
-        let resArr = []
+        let resArr = [];
         if (remove) {
             resArr = arr
         }
-        for (let i = 0; i < arr.length; i++) {
+        for (let i = 0; i < vals.length; i++) {
             if (remove) {
-                resArr = filterListByVal(resArr, remove, vals[i], caseSensitive);
+                resArr = self.filterListByVal(resArr, remove, vals[i], caseSensitive);
             } else {
-                let arr2 = filterListByVal(arr, remove, vals[i], caseSensitive);
-                resArr = mergeArrays(resArr, arr2, true)
+                let arr2 = self.filterListByVal(arr, remove, vals[i], caseSensitive);
+                resArr = self.mergeArrays([resArr, arr2], true)
             }
         }
 
@@ -127,7 +108,7 @@ const self = module.exports = {
     },
 
     /**
-     * will filter a list by val
+     * Will filter a list by val
      */
     filterListByVal: function (arr, remove = false, val, caseSensitive = false) {
         if (caseSensitive) {
@@ -145,18 +126,39 @@ const self = module.exports = {
         }
     },
 
-    mergeArrays: function (arr1, arr2, uniqueElements = false) {
-        if (uniqueElements) {
-            return arr1.filter(value => -1 === arr2.indexOf(value))
-        } else {
-            return arr1.concat(arr2)
-        }
+    /**
+     * Will replace all char occurrences
+     */
+    replaceAll: function (str, find, replace) {
+        return str.replace(new RegExp(find, 'g'), replace);
     },
 
     /**
-     * will filter a dictionary by key
+     * Will return the string representation of an object
      */
-    filterDictByKey: function(dictt, name, remove = false, caseSensitive = false) {
+    toStringRepresenation(obj) {
+        return JSON.stringify(obj)
+    },
+
+    /**
+     * Will merge a bunch of arrays together
+     */
+    mergeArrays: function (arraysList = [], uniqueElements = false) {
+        let finalArr = [];
+        for (let i = 0; i < arraysList.length; i++) {
+            if (uniqueElements) {
+                finalArr = finalArr.filter(value => -1 === arraysList[i].indexOf(value))
+            } else {
+                finalArr = finalArr.concat(arraysList[i])
+            }
+        }
+        return finalArr
+    },
+
+    /**
+     * Will filter a dictionary by key
+     */
+    filterDictByKey: function (dictt, name, remove = false, caseSensitive = false) {
         if (caseSensitive) {
             if (remove) {
                 return dictt.filter(o => !(Object.keys(o).some(k => o[k].includes(name))));
@@ -171,4 +173,4 @@ const self = module.exports = {
             }
         }
     }
-}
+};
