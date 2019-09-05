@@ -141,6 +141,15 @@ const self = module.exports = {
     },
 
     /**
+     * Will join the path of dirs
+     */
+    joinPath: async function (...paths) {
+        const path = require('path');
+        return path.join(paths)
+    },
+
+
+    /**
      * Will merge a bunch of arrays together
      */
     mergeArrays: function (arraysList = [], uniqueElements = false) {
