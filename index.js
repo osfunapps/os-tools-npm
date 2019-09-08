@@ -39,7 +39,7 @@ const self = module.exports = {
             });
 
             coffeeProcess.stdout.on('close', function () {
-                clearTimeout(timer)
+                clearTimeout(timer);
                 resolve()
             });
 
@@ -50,7 +50,7 @@ const self = module.exports = {
             });
 
             function killPocess() {
-                coffeeProcess.kill()
+                coffeeProcess.kill();
                 resolve()
             }
 
@@ -94,7 +94,7 @@ const self = module.exports = {
         const year = date.getUTCFullYear().toString().substring(2);
         const month = date.getUTCMonth() + 1;
         const day = date.getUTCDate();
-        let dateObj = {'year': year, 'month': month, 'day': day, 'toString': day + numbersSeparator + month + numbersSeparator + year}
+        let dateObj = {'year': year, 'month': month, 'day': day, 'toString': day + numbersSeparator + month + numbersSeparator + year};
         return dateObj
     },
 
@@ -162,7 +162,7 @@ const self = module.exports = {
      * Will capitalize only the first word
      */
     capitalizeOnlyFirstWord(str) {
-        str = str.toLowerCase()
+        str = str.toLowerCase();
         return str.charAt(0).toUpperCase() + str.slice(1)
     },
 
@@ -217,5 +217,13 @@ const self = module.exports = {
             .split(' ')
             .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
             .join(' ');
+    },
+
+    /**
+     * Will print obj in a beautiful manner
+     */
+    printObj: function(obj) {
+        const util = require('util');
+        util.inspect(obj, false, null, true)
     }
 };
