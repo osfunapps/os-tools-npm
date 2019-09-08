@@ -1,6 +1,6 @@
 {
   "name": "os-tools",
-  "version": "1.1.6",
+  "version": "1.2.3",
   "description": "This module contains fundamental functions to implement in an npm project",
   "main": "index.js",
   "keywords": [

@@ -28,23 +28,35 @@ const self = module.exports = {
     /**
      * Wll run a cmd command
      */
-    runCmd: function (cmd) {
+    runCmd: function (cmd, timeout = null) {
         return new Promise(function (resolve) {
             var exec = require('child_process').exec;
             var coffeeProcess = exec(cmd);
+            let timer = null;
 
             coffeeProcess.stdout.on('data', function (data) {
                 console.log(data);
             });
 
             coffeeProcess.stdout.on('close', function () {
+                clearTimeout(timer)
                 resolve()
             });
+
 
             coffeeProcess.stdout.on('error', function (err) {
                 console.log("Error running cmd command: ");
                 throw  err
             });
+
+            function killPocess() {
+                coffeeProcess.kill()
+                resolve()
+            }
+
+            if (timeout !== null) {
+                timer = setTimeout(killPocess, timeout)
+            }
         }.bind())
     },
 
@@ -63,9 +75,14 @@ const self = module.exports = {
             stdin.on('data', data => resolve(data.toString().trim()));
             stdin.on('error', err => reject(err));
         })
-    }
-    ,
+    },
 
+    /**
+     * Will surround obj with ""
+     */
+    stringifiy: function (obj) {
+        return "\"" + obj + "\""
+    },
 
     /**
      * Will return today's date.
@@ -73,11 +90,12 @@ const self = module.exports = {
      * @param numbersSeparator -> the separator to use between the numbers
      */
     getTodaysDate: function (numbersSeparator) {
-        const dateObj = new Date();
-        const year = dateObj.getUTCFullYear().toString().substring(2);
-        const month = dateObj.getUTCMonth() + 1;
-        const day = dateObj.getUTCDate();
-        return day + numbersSeparator + month + numbersSeparator + year
+        const date = new Date();
+        const year = date.getUTCFullYear().toString().substring(2);
+        const month = date.getUTCMonth() + 1;
+        const day = date.getUTCDate();
+        let dateObj = {'year': year, 'month': month, 'day': day, 'toString': day + numbersSeparator + month + numbersSeparator + year}
+        return dateObj
     },
 
     /**
@@ -141,11 +159,19 @@ const self = module.exports = {
     },
 
     /**
-     * Will join the path of dirs
+     * Will capitalize only the first word
      */
-    joinPath: async function (...paths) {
+    capitalizeOnlyFirstWord(str) {
+        str = str.toLowerCase()
+        return str.charAt(0).toUpperCase() + str.slice(1)
+    },
+
+    /**
+     * Will join the paths of dirs
+     */
+    joinPath: function (...paths) {
         const path = require('path');
-        return path.join(paths)
+        return path.join(...paths)
     },
 
 
@@ -181,5 +207,15 @@ const self = module.exports = {
                 return dictt.filter(o => Object.keys(o).some(k => o[k].toLowerCase().includes(name.toLowerCase())));
             }
         }
+    },
+
+    /**
+     * Will capitalize each word
+     */
+    capitalizeEachWord: function (text) {
+        return text.toLowerCase()
+            .split(' ')
+            .map((s) => s.charAt(0).toUpperCase() + s.substring(1))
+            .join(' ');
     }
 };
