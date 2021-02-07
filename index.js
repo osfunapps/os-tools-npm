@@ -27,30 +27,49 @@ const self = module.exports = {
 
     /**
      * Wll run a cmd command
+     *
+     * @param cmd -> the command you want to fire
+     * @param print -> set to true to print to console
+     * @param timeout -> timeout for the command time
+     * @param dataListener -> add a data listener to get all of the output in runtime (function(data){})
+     * @param closeListener -> add a close listener to know when the command ends (function(){})
+     * @param errorListener -> add an exception listener to know when the command fails(function(err){})
      */
-    runCmd: function (cmd, timeout = null) {
+    runCmd: function (cmd, print = true, timeout = null, dataListener = null, closeListener = null, errorListener = null) {
         return new Promise(function (resolve) {
-            var exec = require('child_process').exec;
-            var coffeeProcess = exec(cmd);
+            const exec = require('child_process').exec;
+            let coffeeProcess = exec(cmd);
             let timer = null;
 
             coffeeProcess.stdout.on('data', function (data) {
-                console.log(data);
+                if (dataListener !== null) {
+                    dataListener(data)
+                }
+                if (print) {
+                    console.log(data);
+                }
             });
 
             coffeeProcess.stdout.on('close', function () {
-                clearTimeout(timer);
+                if (closeListener !== null) {
+                    closeListener()
+                }
                 resolve()
             });
 
 
             coffeeProcess.stdout.on('error', function (err) {
                 console.log("Error running cmd command: ");
-                throw  err
+                if (errorListener !== null) {
+                    errorListener(err)
+                }
+                if (print) {
+                    console.log(err)
+                }
             });
 
             function killPocess() {
-                coffeeProcess.kill();
+                coffeeProcess.kill()
                 resolve()
             }
 
@@ -59,6 +78,7 @@ const self = module.exports = {
             }
         }.bind())
     },
+
 
     /**
      * Will prompt the user with a question and return the answer.
@@ -70,32 +90,42 @@ const self = module.exports = {
             const {stdin, stdout} = process;
 
             stdin.resume();
-            stdout.write(question + "\n");
+            stdout.write('\033[34;4m' + question + "\n");
 
-            stdin.on('data', data => resolve(data.toString().trim()));
+            stdin.on('data', data => {
+                stdin.removeAllListeners('data')
+                stdin.removeAllListeners('error')
+                resolve(data.toString().trim());
+            });
             stdin.on('error', err => reject(err));
         })
     },
 
-    /**
-     * Will surround obj with ""
-     */
-    stringifiy: function (obj) {
-        return "\"" + obj + "\""
-    },
 
     /**
      * Will return today's date.
      *
      * @param numbersSeparator -> the separator to use between the numbers
+     * @param long -> set true to get a long date
      */
-    getTodaysDate: function (numbersSeparator) {
+    getTodaysDate: function (numbersSeparator, long=false) {
         const date = new Date();
-        const year = date.getUTCFullYear().toString().substring(2);
-        const month = date.getUTCMonth() + 1;
-        const day = date.getUTCDate();
-        let dateObj = {'year': year, 'month': month, 'day': day, 'toString': day + numbersSeparator + month + numbersSeparator + year};
-        return dateObj
+        let year = date.getUTCFullYear().toString()
+        let month = date.getUTCMonth() + 1;
+        let day = date.getUTCDate();
+        if(long){
+            month = (month < 10 ? "0" : "") + month;
+            day = (day < 10 ? "0" : "") + day;
+        } else {
+            year = year.substring(2);
+        }
+
+        return {
+            'year': year,
+            'month': month,
+            'day': day,
+            'toString': day + numbersSeparator + month + numbersSeparator + year
+        }
     },
 
     /**
@@ -222,8 +252,63 @@ const self = module.exports = {
     /**
      * Will print obj in a beautiful manner
      */
-    printObj: function(obj) {
+    printObj: function (obj) {
         const util = require('util');
-        util.inspect(obj, false, null, true)
+        console.log(util.inspect(obj, false, null, true))
+    },
+
+    /**
+     * Will return a key by a value in a dictionary (object)
+     */
+    getKeyByValue: function (obj, value) {
+        return Object.keys(obj).find(key => obj[key] === value);
+    },
+
+    /**
+     * Will run a file
+     */
+    runFile: function (filePath) {
+        let platform = '';
+        switch (process.platform) {
+            case 'darwin' : platform = 'open'; break
+            case 'win32' : platform = 'start'; break;
+            case 'win64' : platform = 'start'; break;
+            default : platform = 'xdg-open'; break;
+        }
+
+        const sys = require('sys');
+        let exec = require('child_process').exec;
+
+        exec(platform + ' ' + filePath);
+    },
+
+    /**
+     * Will sort an array of dictionaries by date
+     */
+    sortArrayByDate: function (arr, dateSeparator) {
+        return arr.sort(function (a, b) {
+            let aDate = a.date.split(dateSeparator)
+            let bDate = b.date.split(dateSeparator)
+            if (aDate[2] > bDate[2]) {
+                return 1
+            } else if (aDate[2] < bDate[2]) {
+                return -1
+            }
+            if (aDate[1] > bDate[1]) {
+                return 1
+            } else if (aDate[1] < bDate[1]) {
+                return -1
+            }
+            if (aDate[0] > bDate[0]) {
+                return 1
+            } else if(aDate[0] < bDate[0]) {
+                return -1
+            } else {
+                return 0
+            }
+        })
     }
+
+
+
 };
